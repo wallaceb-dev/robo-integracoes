@@ -104,18 +104,18 @@ function Request-Api {
 	$basicAuthValue = "Basic $encodedCreds"
 
 	$Headers = @{
-		"Authorization"   = $basicAuthValue;
-		"Content-Type"    = "text/plain";
-		"Accept"          = "*/*";
+		"Authorization" = $basicAuthValue;
+		"Content-Type"  = 'application/json';
+		"Accept"        = "application/json;odata=fullmetadata"
 	}
 
 	$Body = @{
-		'Json' = Get-Content -Encoding "utf8" -Path .\body.json
+		'Json' = Get-Content -Path .\body.json
 	}
 
 	try {
 
-		$Response = Invoke-WebRequest -Method Post -Uri 'http://webappcl.pucrs.br/ws-uol/api/academic/lato/matricula' -Headers $Headers -Body $Body['Json']
+		$Response = Invoke-WebRequest -Method Post -Uri 'https://webappcl.pucrs.br/ws-uol/api/academic/lato/matricula' -Headers $Headers -Body $Body['Json']
 
 		$RequestResponse = $Response | ConvertFrom-Json
 
@@ -124,10 +124,12 @@ function Request-Api {
 		Send-LogMessage "https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit" 'Green' ''
 
 		Save-LogFile $RequestResponse.cdRetorno $Response
-	} catch {
 
-		$Message = if ($null -ne $_.ErrorDetails.Message) { 
-			$_.ErrorDetails.Message 
+	}
+ catch {
+
+		if ($null -ne $_.ErrorDetails.Message) { 
+			$Message = $_.ErrorDetails.Message 
 		} Else { 
 			$formatedBody = $Body['Json'] -replace '"', '\"'
 			$formatedBody = $formatedBody -replace '/', '\/'
@@ -135,18 +137,18 @@ function Request-Api {
 			Clear-Content -Path .\body.json
 			Add-Content -Path .\body.json -Encoding "utf8" -Value $postmanBody
 	
-			$newmanResponse = newman run .\body.json --verbose | Select-String '\"cdRetorno"'
-			$newmanResponse = "$newmanResponse`"}"
-			$newmanResponse = $newmanResponse.Substring(6)
-	
-			$RequestResponse = $newmanResponse | ConvertFrom-Json
-	
-			Send-LogMessage $RequestResponse.msgRetorno 'Red' ''
-	
-			Send-LogMessage "https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit" 'Red' ''
-	
-			Save-LogFile $RequestResponse.cdRetorno $newmanResponse
-			return
+			$newmanResponse = newman run .\body.json --verbose | Select-String '\{"data.'
+
+			if(([string]$newmanResponse).indexOf('[') -eq -1) {
+				$newmanResponse = "$newmanResponse`"}"
+			} Elseif(([string]$newmanResponse).indexOf('dv') -ge 0) {
+				$newmanResponse = "$newmanResponse`}"
+			} Else {
+				$newmanResponse = "$newmanResponse`"]}"
+			}
+			
+			$Message = $newmanResponse.Substring(6)
+
 		}
 
 		$RequestResponse = $Message | ConvertFrom-Json
@@ -156,8 +158,18 @@ function Request-Api {
 		Send-LogMessage "https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit" 'Red' ''
 
 		Save-LogFile $RequestResponse.cdRetorno $Message
+
+		# $Message = if ($null -ne $_.ErrorDetails.Message) { $_.ErrorDetails.Message } Else { '{"msgRetorno":"Nao integrado. Sem motivo aparente", "cdRetorno":"000"}' }
+
+		# $RequestResponse = $Message | ConvertFrom-Json
+
+		# Send-LogMessage $RequestResponse.msgRetorno 'Red' ''
+
+		# Send-LogMessage "https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit" 'Red' ''
+
+		# Save-LogFile $RequestResponse.cdRetorno $Message
+
 	}
- 
 }
 
 function Request-Database {
