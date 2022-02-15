@@ -123,16 +123,17 @@ function Request-Api {
 
 		Save-LogFile $RequestResponse.cdRetorno $Response
 
-	}
- catch {
-		if ($null -ne $_.ErrorDetails.Message) { 
+	} catch {
+
+		if ($null -ne $_.ErrorDetails.Message) {
 			$Message = $_.ErrorDetails.Message 
 		} Else {
 			$formatedBody = $Body['Json'] -replace '"', '\"'
 			$formatedBody = $formatedBody -replace '/', '\/'
+			$formatedBody = $formatedBody -replace '\?\?', 'ã'
 			$postmanBody = $postmanBody -replace '{}', $formatedBody
 			Clear-Content -Path .\body.json
-			Add-Content -Path .\body.json -Encoding "utf8" -Value $postmanBody
+			Add-Content -Path .\body.json -Value $postmanBody
 	
 			$newmanResponse = newman run .\body.json --verbose | Select-String '\{"data.'
 
@@ -156,16 +157,6 @@ function Request-Api {
 
 		Save-LogFile $RequestResponse.cdRetorno $Message
 
-		# $Message = if ($null -ne $_.ErrorDetails.Message) { $_.ErrorDetails.Message } Else { '{"msgRetorno":"Nao integrado. Sem motivo aparente", "cdRetorno":"000"}' }
-
-		# $RequestResponse = $Message | ConvertFrom-Json
-
-		# Send-LogMessage $RequestResponse.msgRetorno 'Red' ''
-
-		# Send-LogMessage "https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit" 'Red' ''
-
-		# Save-LogFile $RequestResponse.cdRetorno $Message
-
 	}
 }
 
@@ -177,7 +168,7 @@ function Request-Database {
 	)
 
 	if ($Type.length -gt 0 -and $Type -ne '') {
-		$Query | mysql -X --default-character-set=utf8 | Out-File -Encoding 'utf8' -FilePath .\xml\$($Type).xml 
+		$Query | mysql -X | Out-File -FilePath .\xml\$($Type).xml 
 		return;
 	} 
 
@@ -203,12 +194,6 @@ function Test-PrimeiroPagamento {
 function Format-Pacote {
 	# Montando pacote
 	php .\php\buildJson.php
-
-	# Resolvendo possiveis erros de encoding
-	php .\php\encoding.php
-
-	# Substituindo possiveis codigos de desconto invalidos
-	php .\php\codigoDesconto208.php
 }
 
 function Request-Integracao {
