@@ -110,7 +110,7 @@ function Request-Api {
 	}
 
 	$Body = @{
-		'Json' = Get-Content -Path .\body.json
+		'Json' = Get-Content -Path .\body.json -Encoding 'utf8'
 	}
 
 	try {
@@ -130,7 +130,7 @@ function Request-Api {
 
 		if ($null -ne $_.ErrorDetails.Message) { 
 			$Message = $_.ErrorDetails.Message 
-		} Else { 
+		} Else {
 			$formatedBody = $Body['Json'] -replace '"', '\"'
 			$formatedBody = $formatedBody -replace '/', '\/'
 			$postmanBody = $postmanBody -replace '{}', $formatedBody
@@ -180,7 +180,7 @@ function Request-Database {
 	)
 
 	if ($Type.length -gt 0 -and $Type -ne '') {
-		$Query | mysql -X | Out-File -FilePath .\xml\$($Type).xml
+		$Query | mysql -X --default-character-set=utf8 | Out-File -Encoding 'utf8' -FilePath .\xml\$($Type).xml 
 		return;
 	} 
 
