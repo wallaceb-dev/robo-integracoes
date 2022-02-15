@@ -37,8 +37,6 @@ $loopbreak = 0
 $data = @()
 $user_input = 0	
 $PacoteSql = Get-Content .\queries\pacote_integra_aluno.sql
-$ParcelasSql = Get-Content .\queries\status_parcelas_matricula.sql
-$ParcelasPacoteSql = Get-Content queries\pacote_parcelas.sql
 $DadosUsuarioSql = Get-Content .\queries\dados_usuario.sql
 
 function Send-LogMessage {
@@ -110,7 +108,7 @@ function Request-Api {
 	}
 
 	$Body = @{
-		'Json' = Get-Content -Path .\body.json -Encoding 'utf8'
+		'Json' = Get-Content -Path .\body.json
 	}
 
 	try {
@@ -127,7 +125,6 @@ function Request-Api {
 
 	}
  catch {
-
 		if ($null -ne $_.ErrorDetails.Message) { 
 			$Message = $_.ErrorDetails.Message 
 		} Else {

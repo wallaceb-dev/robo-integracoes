@@ -133,7 +133,7 @@ SELECT
 							            then (transacoes.valor_bruto * ((ws_cursos.valorcurso - pedidos.valor_liquido) / pedidos.valor_liquido))
 							            else (case when  ((ws_cursos.valorcurso - (pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0))) > 0 and pedidos.valor_desconto >0 and transacoes.valor_desconto > 0)
 							            then transacoes.valor_desconto
-							            else (ws_cursos.valorcurso - (pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0))) end) end) end) end) end),0)), '\"',
+							            else (ABS(ws_cursos.valorcurso - (pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0)))) end) end) end) end) end),0)), '\"',
 	    ',\"dtVencimento\":', DATE_FORMAT(transacoes.data_vencimento, '\"%Y-%m-%d\"'),
 	    ',\"cdDesconto2\":', '\"0\"',
 	    ',\"vlrDesconto2\":', '\"0.00\"',
