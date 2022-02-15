@@ -123,7 +123,7 @@ SELECT
 				            end), '\"',
 		',\"vlrDesconto\":', '\"', (ifnull((case when (((pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0)) >= pedidos.valor_desconto)
 							            and ((ws_cursos.valorcurso - (pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0))) > 0) and (transacoes.valor_desconto = 0))
-							            then (transacoes.valor_bruto * ((ws_cursos.valorcurso - pedidos.valor_liquido) / pedidos.valor_liquido))
+							            then (ABS(transacoes.valor_bruto * ((ws_cursos.valorcurso - pedidos.valor_liquido) / pedidos.valor_liquido)))
 							            else (case when (((pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0)) < (ws_cursos.valorcurso - (pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0)))) and (pedidos.valor_desconto > 0) and (transacoes.valor_desconto = 0))
 							            then (transacoes.valor_bruto * ((ws_cursos.valorcurso - pedidos.valor_liquido) / pedidos.valor_liquido))
 							            else (case when (((pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0)) < (ws_cursos.valorcurso - (pedidos.valor_liquido + ifnull(lancamentos_financeiros.valor, 0))))
