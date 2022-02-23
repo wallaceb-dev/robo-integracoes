@@ -124,7 +124,8 @@ function Request-Api {
 		Save-LogFile $RequestResponse.cdRetorno $Response
 
 	} catch {
-
+		$Message = '{"cdRetorno":"postman_no_response","msgRetorno":"Nao houve retorno da API"}';
+		
 		if ($null -ne $_.ErrorDetails.Message) {
 			$Message = $_.ErrorDetails.Message 
 		} Else {
@@ -137,16 +138,18 @@ function Request-Api {
 	
 			$newmanResponse = newman run .\body.json --verbose | Select-String '\{"data.'
 
-			if(([string]$newmanResponse).indexOf('[') -eq -1) {
-				$newmanResponse = "$newmanResponse`"}"
-			} Elseif(([string]$newmanResponse).indexOf('dv') -ge 0) {
-				$newmanResponse = "$newmanResponse`}"
-			} Else {
-				$newmanResponse = "$newmanResponse`"]}"
-			}
-			
-			$Message = $newmanResponse.Substring(6)
+			if([string]$newmanResponse) {
+				if(([string]$newmanResponse).indexOf('[') -eq -1) {
+					$newmanResponse = "$newmanResponse`"}"
+				} Elseif(([string]$newmanResponse).indexOf('dv') -ge 0) {
+					$newmanResponse = "$newmanResponse`}"
+				} Else {
+					$newmanResponse = "$newmanResponse`"]}"
+				}
+				
+				$Message = $newmanResponse.Substring(6)
 
+			}
 		}
 
 		$RequestResponse = $Message | ConvertFrom-Json
