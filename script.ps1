@@ -73,20 +73,20 @@ function Save-LogFile {
 	$FolderPath = ".\logs\$($Ano)\$($MesName)\$($Data)";
 	$FileName = $($LogFileName)
 	$FilePath = "$($FolderPath)\$($FileName)"
-	$Package = Get-Content -Path .\body.json -Encoding "utf8";
+	$Package = Get-Content -Path .\body.json
 
 	if (!(Test-Path -Path $FolderPath)) {
 		New-Item -Path $FolderPath -ItemType Directory
 		New-Item -Path $FilePath -ItemType File
-		Add-Content -Path $FilePath -Encoding "utf8" -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
+		Add-Content -Path $FilePath -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
 	}
 
 	if (!(Test-Path $FilePath -PathType Leaf)) {
 		New-Item -Path $FilePath -ItemType File
-		Add-Content -Path $FilePath -Encoding "utf8" -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
+		Add-Content -Path $FilePath -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
 	}
 
-	Add-Content -Path $FilePath -Encoding "utf8" -Value "$($MatriculaId);$($UsuarioId);$($DataHora);https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit;$($Package);$($RetornoWS)"
+	Add-Content -Path $FilePath -Value "$($MatriculaId);$($UsuarioId);$($DataHora);https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit;$($Package);$($RetornoWS)"
 
 }
 

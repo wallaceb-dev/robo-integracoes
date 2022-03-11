@@ -75,20 +75,20 @@ function Save-LogFile {
 	$FolderPath = ".\logs\$($Ano)\$($MesName)\$($Data)";
 	$FileName = $($LogFileName)
 	$FilePath = "$($FolderPath)\$($FileName)"
-	$Package = Get-Content -Path .\body.json -Encoding "utf8";
+	$Package = Get-Content -Path .\body.json;
 
 	if (!(Test-Path -Path $FolderPath)) {
 		New-Item -Path $FolderPath -ItemType Directory
 		New-Item -Path $FilePath -ItemType File
-		Add-Content -Path $FilePath -Encoding "utf8" -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
+		Add-Content -Path $FilePath -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
 	}
 
 	if (!(Test-Path $FilePath -PathType Leaf)) {
 		New-Item -Path $FilePath -ItemType File
-		Add-Content -Path $FilePath -Encoding "utf8" -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
+		Add-Content -Path $FilePath -Value 'ID_MATRICULA;ID_USUARIO;DATA_HORA;MATRIX;PACOTE;RETORNO_WS'
 	}
 
-	Add-Content -Path $FilePath -Encoding "utf8" -Value "$($MatriculaId);$($UsuarioId);$($DataHora);https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit;$($Package);$($RetornoWS)"
+	Add-Content -Path $FilePath -Value "$($MatriculaId);$($UsuarioId);$($DataHora);https://matrix.pucrs.br/usuarios/$($UsuarioId)/edit;$($Package);$($RetornoWS)"
 
 }
 
@@ -219,27 +219,32 @@ function Get-Data-Atual {
 
 function Request-Iterador {
 	$total = $matriculas.Length;
-		$PIterator = 1
+	$PIterator = 1
 
-		foreach ($MatriculaId in $matriculas) {
-			Send-LogMessage "$($PIterator)/$total - Integracao Matricula $($MatriculaId)" 'DarkGray' 'White'
+	foreach ($MatriculaId in $matriculas) {
+		Send-LogMessage "$($PIterator)/$total - Integracao Matricula $($MatriculaId)" 'DarkGray' 'White'
 
-			$UsuarioId = Request-Database "SET @matricula_id = $($MatriculaId); $($DadosUsuarioSql)" | Select-String -Pattern '\d'
+		$UsuarioId = Request-Database "SET @matricula_id = $($MatriculaId); $($DadosUsuarioSql)" | Select-String -Pattern '\d'
 
-			Request-Database "SET @matricula_id = $($MatriculaId); $($PacoteSql)" 'pacote'
+		Request-Database "SET @matricula_id = $($MatriculaId); $($PacoteSql)" 'pacote'
 
-			if ($(Test-PrimeiroPagamento) -ne $true) {
-				$PIterator++; 
-				continue 
-			}
-
-			Request-Integracao $UsuarioId
-			$PIterator++;
+		if ($(Test-PrimeiroPagamento) -ne $true) {
+			$PIterator++; 
+			continue 
 		}
+
+		Request-Integracao $UsuarioId
+		$PIterator++;
+	}
 }
 
 function Test-Ultima-Matricula {
 	$UltimaMatriculaData = Get-Content .\txt\data_ultima_integracao.txt | Select-String '\d'
+
+	if($(get-date "$UltimaMatriculaData" -format 'dd') -lt $(Get-Date -format 'dd') -or $(get-date "$UltimaMatriculaData" -format 'MM') -ne $(Get-Date -format 'MM')) {
+		$UltimaMatriculaData = Get-Date -Date (Get-Date).AddMonths(-5) -Format "yyyy-MM-dd HH:mm:ss"
+		Write-Host $UltimaMatriculaData
+	}
 
 	if($UltimaMatriculaData -ne $null) {
 		Request-Database "SET @data_atual = '$(Get-Data-Atual)'; SET @data_ultima_matricula = '$($UltimaMatriculaData)'; $($ListaMatriculasIntegraveisSql)" 'lista_matriculas_integraveis'
@@ -266,9 +271,11 @@ while(1 -ne 2) {
 		 }
 	
 		if($matriculas -ne $null) {
-			Send-LogMessage "$($matriculas.Length) Novas matriculas encontradas." 'DarkCyan' ''
+			Send-LogMessage "Novas matriculas encontradas: ($($matriculas.Length))." 'DarkCyan' ''
 			Request-Iterador
 		}	
+
+		Send-LogMessage "Process finalizado. Proxima verificacao em 10 min." 'DarkYellow' ''
 	} else {
 		Send-LogMessage "Sem novas matriculas." 'DarkYellow' ''
 		Send-LogMessage "Proxima verificacao daqui 10 min." 'DarkYellow' ''

@@ -27,6 +27,16 @@ WHERE
 	WHERE
 		(m.pedido_id = s.pedido_id)
 			AND (s.transacao_status_id = 3))
+	AND e.bairro is not null
+	AND e.numero is not null
+	AND e.logradouro is not null
+	AND e.cep is not null
+	AND e.cidade is not null
+	AND u.nome is not null
+	AND u.email is not null
+	AND uc.ano_formacao > 0
+	AND ce.uf is not null
+	AND uc.passaporte is not null
 ORDER BY
 	m.data_criacao DESC
 	limit 1

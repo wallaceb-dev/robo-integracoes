@@ -8,6 +8,7 @@ foreach ($xml as $key => $row) {
 }
 
 $dadosAluno = $parts[0];
+$dadosAluno = str_replace('N??o', 'Não', $dadosAluno);
 $disciplinas = $parts[1];
 $parcelas = $parts[2];
 
